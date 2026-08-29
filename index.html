@@ -116,7 +116,7 @@
 
     .meter-container { margin-top: 16px; }
     .meter-track { height: 10px; background: var(--track); border-radius: 99px; overflow: hidden; position: relative; }
-    .meter-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: inherit; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 14px rgba(129, 140, 248, 0.7); position: relative; }
+    .meter-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: inherit; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 14px rgba(129, 140, 248, 0.7); position: relative; overflow: hidden; }
     .meter-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); animation: sheen 2.4s linear infinite; }
     @keyframes sheen { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
@@ -173,9 +173,8 @@
     .reset-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
 
     /* ---------- Toast ---------- */
-    .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 140%); z-index: 50; display: flex; align-items: center; gap: 10px; max-width: 90vw; padding: 14px 18px; background: var(--roast-bg); color: var(--roast-text); border-radius: 16px; font-weight: 700; font-size: 14px; box-shadow: 0 16px 40px -10px rgba(0,0,0,0.4); opacity: 0; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.9s ease; }
-    .toast.show { opacity: 1; transform: translate(-50%, 0); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease; }
-    .toast.show { transform: translate(-50%, 0); }
+    .toast { position: fixed; left: 0; right: 0; margin: 0 auto; bottom: 28px; width: fit-content; max-width: 90vw; transform: translateY(140%); z-index: 50; display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: var(--roast-bg); color: var(--roast-text); border-radius: 16px; font-weight: 700; font-size: 14px; box-shadow: 0 16px 40px -10px rgba(0,0,0,0.4); opacity: 0; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.9s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease; }
     .toast.shake { animation: shake 0.5s; }
     .toast .toast-emoji { font-size: 22px; }
 
