@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Study? OR NOT.</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+    :root {
+      --bg-1: #eef2ff;
+      --bg-2: #fdf2f8;
+      --card-bg: rgba(255, 255, 255, 0.72);
+      --card-border: rgba(255, 255, 255, 0.6);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent: #6366f1;
+      --accent-2: #a855f7;
+      --accent-hover: #4f46e5;
+      --accent-soft: #e0e7ff;
+      --roast-bg: linear-gradient(135deg, #ff8a5c, #ff5e62);
+      --roast-text: #fff;
+      --shadow-lg: 0 24px 50px -18px rgba(99, 102, 241, 0.35);
+      --track: #e2e8f0;
+      --theme-green: #10b981; --theme-green-soft: #d1fae5;
+      --theme-yellow: #f59e0b; --theme-yellow-soft: #fef3c7;
+      --theme-red: #ef4444; --theme-red-soft: #fee2e2;
+      --theme-blue: #3b82f6; --theme-blue-soft: #dbeafe;
+    }
+
+    body.night {
+      --bg-1: #0b1026;
+      --bg-2: #1a1040;
+      --card-bg: rgba(20, 24, 55, 0.62);
+      --card-border: rgba(129, 140, 248, 0.18);
+      --text-main: #eef2ff;
+      --text-muted: #94a3c4;
+      --accent: #818cf8;
+      --accent-2: #e879f9;
+      --accent-hover: #a5b4fc;
+      --accent-soft: rgba(129, 140, 248, 0.18);
+      --roast-bg: linear-gradient(135deg, #ff5e62, #ff9966);
+      --shadow-lg: 0 24px 50px -18px rgba(0, 0, 0, 0.6);
+      --track: #2a2f55;
+      --theme-green-soft: rgba(16,185,129,0.16);
+      --theme-yellow-soft: rgba(245,158,11,0.16);
+      --theme-red-soft: rgba(239,68,68,0.16);
+      --theme-blue-soft: rgba(59,130,246,0.16);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
+      background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.8s ease, color 0.8s ease;
+    }
+
+    /* ---------- Animated background blobs ---------- */
+    .bg-blobs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.5; mix-blend-mode: multiply; }
+    body.night .blob { mix-blend-mode: screen; opacity: 0.4; }
+    .blob.b1 { width: 45vw; height: 45vw; left: -10vw; top: -10vw; background: #a5b4fc; animation: drift1 22s ease-in-out infinite; }
+    .blob.b2 { width: 40vw; height: 40vw; right: -12vw; top: 15vh; background: #f9a8d4; animation: drift2 26s ease-in-out infinite; }
+    .blob.b3 { width: 38vw; height: 38vw; left: 20vw; bottom: -15vw; background: #93c5fd; animation: drift3 30s ease-in-out infinite; }
+    @keyframes drift1 { 50% { transform: translate(12vw, 8vh) scale(1.15); } }
+    @keyframes drift2 { 50% { transform: translate(-10vw, 14vh) scale(0.9); } }
+    @keyframes drift3 { 50% { transform: translate(8vw, -10vh) scale(1.2); } }
+
+    /* ---------- Starfield (night) ---------- */
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle var(--d, 3s) ease-in-out infinite; }
+    @keyframes twinkle { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 1; transform: scale(1.4); } }
+
+    /* ---------- Floating emoji ---------- */
+    .floaters { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+    .floater { position: absolute; bottom: -60px; font-size: 26px; opacity: 0; animation: floatUp var(--dur, 16s) linear infinite; animation-delay: var(--delay, 0s); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15)); }
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.5; }
+      50% { opacity: 0.7; }
+      90% { opacity: 0.3; }
+      100% { transform: translateY(-115vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ---------- Layout ---------- */
+    .app { position: relative; z-index: 2; width: min(100%, 640px); margin: 0 auto; padding: 32px 16px 80px; }
+
+    header { animation: fadeInDown 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--accent-soft); color: var(--accent-hover); border-radius: 99px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 16px; }
+    .title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(34px, 9vw, 50px); line-height: 1.02; font-weight: 700; letter-spacing: -0.03em; margin: 0; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { margin-top: 12px; color: var(--text-muted); font-size: 16px; line-height: 1.6; font-weight: 400; }
+
+    .mascot-row { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+    #mascot { font-size: 44px; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); display: inline-block; }
+    #mascot.bounce { animation: mascotBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes mascotBounce { 0%,100% { transform: scale(1) rotate(0); } 30% { transform: scale(1.25) rotate(-10deg); } 60% { transform: scale(0.9) rotate(8deg); } }
+    #mascotText { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+
+    /* ---------- Cards ---------- */
+    .card { background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--card-border); border-radius: 26px; box-shadow: var(--shadow-lg); margin-top: 24px; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: cardIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .card:hover { transform: translateY(-3px); }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(24px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--track); }
+    .dash-panel { background: var(--card-bg); padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+    @media (max-width: 480px) { .dash-grid { grid-template-columns: 1fr; } }
+    .dash-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .dash-value { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+    .dash-subtext { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    .meter-container { margin-top: 16px; }
+    .meter-track { height: 10px; background: var(--track); border-radius: 99px; overflow: hidden; position: relative; }
+    .meter-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: inherit; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 14px rgba(129, 140, 248, 0.7); position: relative; }
+    .meter-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); animation: sheen 2.4s linear infinite; }
+    @keyframes sheen { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+    /* ---------- Quiz ---------- */
+    .quiz-inner { padding: 32px 24px; }
+    .progress-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: var(--text-muted); }
+    .progress-track { height: 8px; background: var(--track); border-radius: 99px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+    .progress-bar::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-45deg, rgba(255,255,255,0.25) 0 8px, transparent 8px 16px); background-size: 200% 100%; animation: stripes 1.2s linear infinite; }
+    @keyframes stripes { 0% { background-position: 0 0; } 100% { background-position: 32px 0; } }
+
+    .question-container { padding-top: 32px; min-height: 110px; }
+    .question { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: clamp(20px, 6vw, 26px); line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
+    .question-help { margin-top: 12px; color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+
+    .options { display: grid; gap: 12px; margin-top: 28px; }
+    .option { width: 100%; display: flex; align-items: flex-start; gap: 16px; padding: 18px; text-align: left; background: var(--card-bg); border: 2px solid transparent; border-radius: 20px; color: var(--text-main); cursor: pointer; box-shadow: 0 4px 12px -4px rgba(0,0,0,0.08); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; transform: translateY(16px); animation: slideUp 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .option:active { transform: scale(0.96); }
+    .option:hover { border-color: var(--accent-soft); transform: translateY(-3px) rotate(-0.3deg); box-shadow: 0 16px 30px -12px rgba(99, 102, 241, 0.4); }
+    .option-icon { display: grid; place-items: center; width: 46px; height: 46px; flex: 0 0 auto; border-radius: 14px; background: var(--accent-soft); color: var(--accent); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .option:hover .option-icon { background: var(--accent); color: #fff; transform: rotate(-8deg) scale(1.1); }
+    .option-content { min-width: 0; padding-top: 2px; }
+    .option-title { font-size: 16px; font-weight: 700; }
+    .option-description { margin-top: 4px; color: var(--text-muted); font-size: 14px; line-height: 1.5; }
+
+    /* ---------- Result ---------- */
+    .result { margin-top: 24px; padding: 28px; border-radius: 24px; border: 2px solid transparent; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .result.theme-green { background: var(--theme-green-soft); border-color: rgba(16,185,129,0.35); color: #064e3b; }
+    .result.theme-yellow { background: var(--theme-yellow-soft); border-color: rgba(245,158,11,0.35); color: #78350f; }
+    .result.theme-red { background: var(--theme-red-soft); border-color: rgba(239,68,68,0.35); color: #7f1d1d; }
+    .result.theme-blue { background: var(--theme-blue-soft); border-color: rgba(59,130,246,0.35); color: #1e3a8a; }
+    body.night .result.theme-green, body.night .result.theme-yellow, body.night .result.theme-red, body.night .result.theme-blue { color: var(--text-main); }
+
+    .result-icon-wrap { display: inline-flex; padding: 12px; border-radius: 16px; background: rgba(255,255,255,0.6); margin-bottom: 16px; }
+    .result-title { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+    .result-description { margin-top: 12px; font-size: 15px; line-height: 1.6; opacity: 0.9; }
+    .result-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+    .stat-pill { background: rgba(255,255,255,0.7); padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .result-action { display: flex; align-items: flex-start; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 15px; font-weight: 700; line-height: 1.5; }
+
+    /* ---------- Roast card ---------- */
+    .roast-card { margin-top: 16px; padding: 18px 20px; border-radius: 18px; background: var(--roast-bg); color: var(--roast-text); display: flex; align-items: flex-start; gap: 14px; box-shadow: 0 12px 30px -10px rgba(255, 94, 98, 0.55); animation: popIn 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .roast-card .roast-emoji { font-size: 30px; line-height: 1; animation: roastSpin 3s ease-in-out infinite; }
+    @keyframes roastSpin { 0%,100% { transform: rotate(0) } 25% { transform: rotate(-12deg) } 75% { transform: rotate(12deg) } }
+    .roast-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+    .roast-text { margin-top: 4px; font-size: 15px; line-height: 1.55; font-weight: 600; }
+
+    .roast-meter-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-top: 14px; color: var(--text-muted); }
+    .roast-meter-track { height: 8px; background: var(--track); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+    .roast-meter-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #fbbf24, #f97316, #ef4444); border-radius: inherit; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    .reset-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 24px; padding: 16px; background: var(--card-bg); border: 2px solid var(--track); border-radius: 16px; color: var(--text-main); font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px -4px rgba(0,0,0,0.08); }
+    .reset-btn:active { transform: scale(0.96); }
+    .reset-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+    /* ---------- Toast ---------- */
+    .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 140%); z-index: 50; display: flex; align-items: center; gap: 10px; max-width: 90vw; padding: 14px 18px; background: var(--roast-bg); color: var(--roast-text); border-radius: 16px; font-weight: 700; font-size: 14px; box-shadow: 0 16px 40px -10px rgba(0,0,0,0.4); opacity: 0; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.9s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease; }
+    .toast.show { transform: translate(-50%, 0); }
+    .toast.shake { animation: shake 0.5s; }
+    .toast .toast-emoji { font-size: 22px; }
+
+    /* ---------- Confetti canvas ---------- */
+    #confetti { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+
+    /* ---------- Keyframes ---------- */
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(0.9); } 60% { transform: scale(1.03); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-8px) rotate(-1deg); } 30% { transform: translateX(8px) rotate(1deg); } 45% { transform: translateX(-6px); } 60% { transform: translateX(6px); } 75% { transform: translateX(-3px); } 90% { transform: translateX(3px); } }
+    @keyframes pulseSoft { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .pulse-text { animation: pulseSoft 2s infinite; }
+    .app.shake { animation: shake 0.5s; }
+
+    .logic-card { margin-top: 24px; padding: 18px 24px; border-radius: 20px; background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); font-size: 13px; color: var(--text-muted); text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+  <div id="stars"></div>
+  <div class="floaters" id="floaters"></div>
+  <canvas id="confetti"></canvas>
+
+  <main class="app" id="app">
+    <header>
+      <div class="eyebrow"><i data-lucide="brain" width="14" height="14"></i> Cognitive Check</div>
+      <h1 class="title">Study? OR NOT.</h1>
+      <p class="subtitle">Context is everything. This tool fuses your body clock, environment and state of mind to tell you the most effective way to spend your time right now — and it will absolutely judge you for it.</p>
+      <div class="mascot-row">
+        <span id="mascot">😐</span>
+        <span id="mascotText">Analyzing your life choices...</span>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="dash-grid">
+        <div class="dash-panel">
+          <div class="dash-label"><i data-lucide="clock" width="14" height="14"></i> Local Time</div>
+          <div id="localTime" class="dash-value">--:--</div>
+          <div id="localDate" class="dash-subtext">Loading...</div>
+        </div>
+        <div class="dash-panel">
+          <div class="dash-label"><i data-lucide="activity" width="14" height="14"></i> Expected Energy</div>
+          <div id="energyTitle" class="dash-value pulse-text">Calculating</div>
+          <div class="meter-container">
+            <div class="meter-track"><div id="energyFill" class="meter-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="quiz-inner">
+        <div class="progress-header">
+          <span id="progressLabel">Question 1 of 7</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+
+        <div class="question-container" id="questionArea">
+          <h2 id="question" class="question"></h2>
+          <p id="questionHelp" class="question-help"></p>
+        </div>
+
+        <div id="options" class="options"></div>
+
+        <div id="result" class="result" style="display: none;">
+          <div class="result-icon-wrap"><i id="resultIcon" width="28" height="28"></i></div>
+          <div id="resultTitle" class="result-title"></div>
+          <div id="resultDescription" class="result-description"></div>
+          <div class="result-stats">
+            <div class="stat-pill"><i data-lucide="trending-up" width="14"></i> <span id="expectedValue"></span> Expected</div>
+            <div class="stat-pill"><i data-lucide="zap" width="14"></i> <span id="actualValue"></span> Actual</div>
+          </div>
+          <div id="resultAction" class="result-action"></div>
+
+          <div id="roastCard" class="roast-card" style="display: none;">
+            <span id="roastEmoji" class="roast-emoji">🔥</span>
+            <div>
+              <div class="roast-title">The Verdict</div>
+              <div id="roastText" class="roast-text"></div>
+            </div>
+          </div>
+
+          <div id="roastMeterWrap" style="display: none;">
+            <div class="roast-meter-label"><span>🔥 Roast Meter</span><span id="roastLevelLabel">0 / 100</span></div>
+            <div class="roast-meter-track"><div id="roastMeterFill" class="roast-meter-fill"></div></div>
+          </div>
+        </div>
+
+        <button id="resetButton" class="reset-btn" type="button" style="display: none;">
+          <i data-lucide="rotate-ccw" width="18"></i> Run it back
+        </button>
+      </div>
+    </section>
+
+    <div class="logic-card">
+      Built for smarter learning. Don't maximize hours; maximize useful cognitive work per hour.
+    </div>
+  </main>
+
+  <div class="toast" id="toast">
+    <span class="toast-emoji" id="toastEmoji">🌙</span>
+    <span id="toastText">...</span>
+  </div>
+
+<script>
+lucide.createIcons();
+
+/* ---------------- Haptics ---------------- */
+const haptic = (pattern) => {
+  if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch(e) {} }
+};
+
+/* ---------------- Theme (day / night) ---------------- */
+const body = document.body;
+function applyTheme(now) {
+  const h = now.getHours();
+  const isNight = h >= 22 || h < 6;
+  body.classList.toggle("night", isNight);
+  if (isNight) buildStars(); else document.getElementById("stars").innerHTML = "";
+}
+function buildStars() {
+  const starsEl = document.getElementById("stars");
+  if (starsEl.children.length) return;
+  const count = 90;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement("div");
+    s.className = "star";
+    const size = Math.random() * 2.5 + 1;
+    s.style.width = size + "px";
+    s.style.height = size + "px";
+    s.style.left = Math.random() * 100 + "%";
+    s.style.top = Math.random() * 100 + "%";
+    s.style.setProperty("--d", (Math.random() * 3 + 2) + "s");
+    s.style.animationDelay = Math.random() * 3 + "s";
+    starsEl.appendChild(s);
+  }
+}
+
+/* ---------------- Floating emoji ---------------- */
+const floatEmojis = ["😴", "📚", "⚡", "🌙", "💤", "☕", "🔥", "🧠", "✨", "💡"];
+function buildFloaters() {
+  const container = document.getElementById("floaters");
+  for (let i = 0; i < 14; i++) {
+    const f = document.createElement("span");
+    f.className = "floater";
+    f.textContent = floatEmojis[Math.floor(Math.random() * floatEmojis.length)];
+    f.style.left = Math.random() * 100 + "%";
+    f.style.setProperty("--dur", (Math.random() * 14 + 12) + "s");
+    f.style.setProperty("--delay", (Math.random() * 14) + "s");
+    container.appendChild(f);
+  }
+}
+
+/* ---------------- Clock ---------------- */
+const timeFormatter = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", hour12: true });
+const dateFormatter = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "short", day: "numeric" });
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById("localTime").textContent = timeFormatter.format(now);
+  document.getElementById("localDate").textContent = dateFormatter.format(now);
+  updateExpectedEnergy(now);
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+/* ---------------- Energy curve ---------------- */
+function expectedEnergy(hourDecimal) {
+  let score;
+  if(hourDecimal < 5) score = 25;
+  else if(hourDecimal < 7) score = 25 + (hourDecimal - 5) * 20;
+  else if(hourDecimal < 9) score = 65 + (hourDecimal - 7) * 12.5;
+  else if(hourDecimal < 11) score = 90 - (hourDecimal - 9) * 3;
+  else if(hourDecimal < 13) score = 84 - (hourDecimal - 11) * 7;
+  else if(hourDecimal < 15) score = 70 - (hourDecimal - 13) * 10;
+  else if(hourDecimal < 17) score = 50 + (hourDecimal - 15) * 14;
+  else if(hourDecimal < 19) score = 78 - (hourDecimal - 17) * 5;
+  else if(hourDecimal < 21) score = 68 - (hourDecimal - 19) * 7;
+  else if(hourDecimal < 23) score = 54 - (hourDecimal - 21) * 10;
+  else score = 30;
+  return Math.max(20, Math.min(95, Math.round(score)));
+}
+function energyLabel(score) {
+  if(score >= 82) return "Peak";
+  if(score >= 68) return "High";
+  if(score >= 52) return "Moderate";
+  if(score >= 38) return "Dipping";
+  return "Low";
+}
+function updateExpectedEnergy(now) {
+  const h = now.getHours() + now.getMinutes() / 60;
+  const score = expectedEnergy(h);
+  setTimeout(() => {
+    document.getElementById("energyFill").style.width = score + "%";
+    document.getElementById("energyTitle").textContent = `${score}% (${energyLabel(score)})`;
+    document.getElementById("energyTitle").classList.remove("pulse-text");
+  }, 300);
+}
+
+/* ---------------- Roast Engine ---------------- */
+const toastEl = document.getElementById("toast");
+const toastText = document.getElementById("toastText");
+const toastEmoji = document.getElementById("toastEmoji");
+let toastTimer = null;
+
+function showToast(text, emoji) {
+  toastText.textContent = text;
+  toastEmoji.textContent = emoji || "🔥";
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastEl.classList.remove("shake");
+  void toastEl.offsetWidth;
+  toastEl.classList.add("shake");
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 6000);
+}
+
+const roastTimeLabel = () => {
+  const now = new Date();
+  let h = now.getHours();
+  const m = now.getMinutes().toString().padStart(2, "0");
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  return `${h}:${m} ${ampm}`;
+};
+
+const roastPools = {
+  night: [
+    () => `It's ${roastTimeLabel()}. Real scholars call this "tomorrow". Go to sleep.`,
+    () => `You're debating whether to study at ${roastTimeLabel()}. That's not ambition, that's insomnia with extra steps.`,
+    () => `${roastTimeLabel()} and you're here. Even your textbooks are asleep.`,
+    () => `It's ${roastTimeLabel()}. Your brain already filed a leave request — it just didn't tell you.`,
+    () => `Studying at ${roastTimeLabel()} doesn't make you smart. It makes you tired AND behind. Go to bed.`
+  ],
+  earlyMorning: [
+    () => `Up at ${roastTimeLabel()}? Either you're a monk or your sleep schedule just quit.`,
+    () => `${roastTimeLabel()} and the sun isn't even up. Respect... but also, why?`
+  ],
+  morning: [
+    () => `${roastTimeLabel()}, prime time. If you mess this up, that one's on you.`,
+    () => `It's ${roastTimeLabel()} and you're here? Honestly, this is the smartest thing you'll do all day.`
+  ],
+  afternoon: [
+    () => `It's ${roastTimeLabel()}. The post-lunch nap demon is watching you right now.`,
+    () => `${roastTimeLabel()}. You've had all day. Where was this energy?`
+  ],
+  evening: [
+    () => `${roastTimeLabel()}. The whole day passed and NOW you're motivated? Classic.`,
+    () => `It's ${roastTimeLabel()} and you're just now thinking about studying. We both know how this ends.`
+  ],
+  tired: [
+    "You literally admitted you're tired and still opened this. The delusion is impressive.",
+    "Tired AND studying? Bold strategy. Your brain will remember none of it.",
+    "You're running on fumes and still trying to learn. Respect the self-sabotage."
+  ],
+  distracted: [
+    "Your phone is winning right now. It always wins.",
+    "Distracted environment? Your brain is doing 4 tabs of nothing and 0 tabs of studying.",
+    "You know it's distracting and you're still there. That's a choice, champ."
+  ],
+  unclear: [
+    "You don't know WHAT to study but you're studying... about studying. Peak efficiency.",
+    "No target? So you're about to 'study' — which is just staring at a syllabus for 40 minutes.",
+    "A vague plan is just a fancy way to procrastinate. You're welcome."
+  ],
+  shortTime: [
+    "10 minutes? Bold of you to think you'll actually start within 10 minutes.",
+    "A 10-minute sprint. You'll spend 9 of those finding the right video."
+  ],
+  lowEnergy: [
+    "Low energy and you chose 'study' from the menu? Brave. Foolish, but brave.",
+    "You're basically a laptop on 3% battery insisting it can render a 4K video."
+  ],
+  unknown: [
+    "Brand new topic, no clue what's going on. Tonight we wing it. What could go wrong?",
+    "Unfamiliar territory with zero map. You're about to make flashcards you'll never look at again."
+  ]
+};
+
+function pick(list) {
+  const f = list[Math.floor(Math.random() * list.length)];
+  return typeof f === "function" ? f() : f;
+}
+function timePool(now) {
+  const h = now.getHours();
+  if (h >= 22 || h < 5) return "night";
+  if (h < 7) return "earlyMorning";
+  if (h < 12) return "morning";
+  if (h < 17) return "afternoon";
+  return "evening";
+}
+
+let roastLevel = 0;
+const ROAST_TRIGGERS = [
+  { key: 0, value: "tired", pool: "tired", points: 25, emoji: "😴" },
+  { key: 2, value: "distracted_env", pool: "distracted", points: 25, emoji: "📱" },
+  { key: 3, value: "unclear", pool: "unclear", points: 18, emoji: "🎯" },
+  { key: 1, value: "short", pool: "shortTime", points: 10, emoji: "⏱️" },
+  { key: 6, value: "low", pool: "lowEnergy", points: 15, emoji: "🪫" },
+  { key: 4, value: "unknown", pool: "unknown", points: 8, emoji: "🔭" }
+];
+
+function roastOnAnswer(value) {
+  const trig = ROAST_TRIGGERS.find(t => t.value === value);
+  if (!trig) return;
+  roastLevel += trig.points;
+  const text = pick(roastPools[trig.pool]);
+  setTimeout(() => showToast(text, trig.emoji), 350);
+  setMascot("😂", "Oof. Called out.");
+}
+
+function timeRoastPoints(now) {
+  const h = now.getHours();
+  if (h >= 22 || h < 5) return 35;
+  if (h < 7) return 20;
+  if (h >= 21) return 15;
+  return 5;
+}
+
+function finalRoastText() {
+  const levels = [
+    { max: 25, emoji: "😎", lines: [
+      "Honestly? You're doing fine. Suspiciously fine. Did you bribe the system?",
+      "A rare responsible moment from you. Screenshot it, it won't last.",
+      "Look at you, making good choices. Who are you and what did you do with the real you?"
+    ]},
+    { max: 55, emoji: "🌶️", lines: [
+      "A mild to medium roast. You're not a disaster, but you're not winning awards either.",
+      "Somewhere between 'future doctor' and 'future notification sound'. Keep it up.",
+      "You're one bad decision away from a redemption arc. Tread carefully."
+    ]},
+    { max: 80, emoji: "🔥", lines: [
+      "We're entering 'genuinely concerning' territory. Your sleep schedule has filed a complaint.",
+      "The ghost of your GPA is watching this and quietly shaking its head.",
+      "You came here for study advice and got roasted instead. You should've seen this coming."
+    ]},
+    { max: Infinity, emoji: "☄️", lines: [
+      "NUCLEAR roast. You have achieved peak chaos. Even this app needs a minute.",
+      "It's giving 'starts homework at 2am, opens 14 tabs, learns nothing'. Respect the grind, fear the outcome.",
+      "Your future self is sending this roast back in time to stop you. It didn't work."
+    ]}
+  ];
+  const tier = levels.find(l => roastLevel <= l.max);
+  return { text: pick(tier.lines), emoji: tier.emoji };
+}
+
+function setMascot(emoji, text) {
+  const m = document.getElementById("mascot");
+  const t = document.getElementById("mascotText");
+  m.textContent = emoji;
+  t.textContent = text;
+  m.classList.remove("bounce");
+  void m.offsetWidth;
+  m.classList.add("bounce");
+}
+
+/* ---------------- Confetti ---------------- */
+const confettiCanvas = document.getElementById("confetti");
+const ctx = confettiCanvas.getContext("2d");
+let confettiParticles = [];
+function resizeConfetti() {
+  confettiCanvas.width = innerWidth;
+  confettiCanvas.height = innerHeight;
+}
+addEventListener("resize", resizeConfetti);
+resizeConfetti();
+
+function confettiBurst(count = 160) {
+  const colors = ["#6366f1", "#a855f7", "#f43f5e", "#f59e0b", "#10b981", "#3b82f6", "#ec4899"];
+  for (let i = 0; i < count; i++) {
+    confettiParticles.push({
+      x: Math.random() * confettiCanvas.width,
+      y: -20 - Math.random() * confettiCanvas.height * 0.3,
+      w: Math.random() * 8 + 4,
+      h: Math.random() * 12 + 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 3,
+      vy: Math.random() * 3 + 2,
+      rot: Math.random() * Math.PI,
+      vr: (Math.random() - 0.5) * 0.25
+    });
+  }
+  if (!confettiRunning) { confettiRunning = true; confettiLoop(); }
+}
+let confettiRunning = false;
+function confettiLoop() {
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  confettiParticles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+    p.vy += 0.03;
+  });
+  confettiParticles.forEach(p => {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    ctx.restore();
+  });
+  confettiParticles = confettiParticles.filter(p => p.y < confettiCanvas.height + 30);
+  if (confettiParticles.length) requestAnimationFrame(confettiLoop);
+  else { confettiRunning = false; ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height); }
+}
+
+/* ---------------- Quiz Data ---------------- */
+const questions = [
+  { question: "Are you physically and mentally ready to focus?", help: "Be honest. Are you sleepy, hungry, or repeatedly zoning out?", answers: [
+    { label: "Yes, I'm reasonably alert", description: "I can probably hold focus for a while.", value: "ready", icon: "battery-charging" },
+    { label: "No, I'm seriously tired", description: "My brain is already fighting me.", value: "tired", icon: "battery-warning" }]},
+  { question: "How much uninterrupted time do you have?", help: "Be realistic about when your next hard stop is (class, dinner, transit).", answers: [
+    { label: "Short (10 - 25 mins)", description: "Just a quick sprint.", value: "short", icon: "timer" },
+    { label: "Medium (30 - 60 mins)", description: "A solid Pomodoro block.", value: "medium", icon: "hourglass" },
+    { label: "Long (1 hr+)", description: "Time for a deep dive.", value: "long", icon: "clock" }]},
+  { question: "Is your environment optimized for focus?", help: "Is your phone out of reach? Are you safe from constant interruptions?", answers: [
+    { label: "Yes, I'm locked in", description: "Quiet space, notifications are off.", value: "focused_env", icon: "headphones" },
+    { label: "No, it's distracting", description: "Phone nearby, noisy, or chaotic.", value: "distracted_env", icon: "smartphone" }]},
+  { question: "Do you know exactly what you need to study?", help: "“I should study” isn't a task. A concrete outcome is.", answers: [
+    { label: "Yes, I have a target", description: "e.g., Solve 5 problems, read section 2.", value: "clear", icon: "crosshair" },
+    { label: "No, I'm just winging it", description: "I just know I need to 'study biology'.", value: "unclear", icon: "help-circle" }]},
+  { question: "Have you encountered this topic before?", help: "Even a short skim counts as previous exposure.", answers: [
+    { label: "Yes, some context", description: "I've seen the lecture or skimmed notes.", value: "known", icon: "book-open" },
+    { label: "No, entirely unfamiliar", description: "This looks like alien technology.", value: "unknown", icon: "telescope" }]},
+  { question: "Is a class or test on this topic happening soon?", help: "Urgency changes how we should approach the material.", answers: [
+    { label: "Yes, very soon", description: "I need to know this tomorrow or today.", value: "soon", icon: "alarm-clock" },
+    { label: "No, I have time", description: "No immediate pressure.", value: "later", icon: "calendar" }]},
+  { question: "What is your energy level right this minute?", help: "This overrides the clock. How do you personally feel?", answers: [
+    { label: "High Energy", description: "I can think deeply and problem-solve.", value: "high", icon: "zap" },
+    { label: "Medium Energy", description: "I can review, but not learn hard new things.", value: "medium", icon: "activity" },
+    { label: "Low Energy", description: "I can only do light organization or previewing.", value: "low", icon: "coffee" }]}
+];
+
+let currentQuestion = 0;
+let answers = {};
+
+const optionsEl = document.getElementById("options");
+const questionArea = document.getElementById("questionArea");
+const resultEl = document.getElementById("result");
+const resetBtn = document.getElementById("resetButton");
+
+function renderQuestion() {
+  resultEl.style.display = "none";
+  resetBtn.style.display = "none";
+  optionsEl.innerHTML = "";
+  questionArea.style.display = "block";
+  setMascot("🧐", "Answer honestly. I'm watching.");
+
+  if (currentQuestion >= questions.length) { showResult(); return; }
+
+  const q = questions[currentQuestion];
+  document.getElementById("question").textContent = q.question;
+  document.getElementById("questionHelp").textContent = q.help;
+
+  const percent = Math.round((currentQuestion / questions.length) * 100);
+  document.getElementById("progressLabel").textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+  document.getElementById("progressPercent").textContent = percent + "%";
+  document.getElementById("progressBar").style.width = percent + "%";
+
+  q.answers.forEach((a, index) => {
+    const btn = document.createElement("button");
+    btn.className = "option";
+    btn.style.animationDelay = `${index * 0.09}s`;
+    btn.innerHTML = `
+      <div class="option-icon"><i data-lucide="${a.icon}" width="20"></i></div>
+      <div class="option-content">
+        <div class="option-title">${a.label}</div>
+        <div class="option-description">${a.description}</div>
+      </div>
+    `;
+    btn.addEventListener("click", () => {
+      haptic(15);
+      answers[currentQuestion] = a.value;
+      roastOnAnswer(a.value);
+      currentQuestion++;
+      setTimeout(renderQuestion, 180);
+    });
+    optionsEl.appendChild(btn);
+  });
+  lucide.createIcons();
+}
+
+function getCurrentExpected() {
+  const now = new Date();
+  return expectedEnergy(now.getHours() + now.getMinutes() / 60);
+}
+function actualEnergyScore() {
+  if (answers[6] === "high") return 90;
+  if (answers[6] === "medium") return 65;
+  return 38;
+}
+
+function showResult() {
+  questionArea.style.display = "none";
+  optionsEl.innerHTML = "";
+  document.getElementById("progressBar").style.width = "100%";
+  document.getElementById("progressLabel").textContent = "Analysis Complete";
+  document.getElementById("progressPercent").textContent = "100%";
+
+  const expected = getCurrentExpected();
+  const actual = actualEnergyScore();
+  document.getElementById("expectedValue").textContent = expected + "%";
+  document.getElementById("actualValue").textContent = actual + "%";
+
+  let theme = "theme-blue", title = "", description = "", action = "", icon = "", mascot = "🤓";
+  let hapticPattern = [20, 30, 20];
+
+  if (answers[0] === "tired") {
+    theme = "theme-red"; icon = "moon"; title = "Don't force deep study.";
+    description = "Your body is giving you a strong warning signal. Working now will yield heavily diminishing returns.";
+    action = "Recover first. If you absolutely must work, organize notes or do light review.";
+    mascot = "😴"; hapticPattern = [40, 60, 40, 60, 100];
+  } else if (answers[2] === "distracted_env") {
+    theme = "theme-red"; icon = "smartphone"; title = "Fix your environment first.";
+    description = "Your brain cannot do deep, meaningful learning while constantly scanning for notifications or filtering out chaos.";
+    action = "Pause. Put your phone in another room or turn on Do Not Disturb. Don't start until your space is clear.";
+    mascot = "📵"; hapticPattern = [30, 50, 30, 50, 80];
+  } else if (answers[3] === "unclear") {
+    theme = "theme-yellow"; icon = "target"; title = "Define your task first.";
+    description = "You have a usable window, but an undefined task creates a perfect opening for procrastination.";
+    action = "Spend 2 minutes writing down ONE concrete, achievable outcome, then begin.";
+    mascot = "🎯"; hapticPattern = [30, 50, 30];
+  } else if (answers[1] === "short") {
+    theme = "theme-green"; icon = "timer"; title = "Activate Micro-Session.";
+    description = "You only have a few minutes. Don't open a heavy textbook or start a complex problem.";
+    action = "Do a quick sprint: 10 minutes of flashcards, review yesterday's notes, or plan your next long session.";
+    mascot = "⚡"; hapticPattern = [20, 30, 20, 30, 20];
+  } else if (answers[4] === "unknown" && answers[5] === "soon") {
+    theme = "theme-green"; icon = "scan-search"; title = "Preview mode active.";
+    description = "Context is king. Because class is soon and the topic is new, don't aim for mastery today. Aim for familiarity.";
+    action = "Spend 15 mins scanning headings, diagrams, and writing down 3 questions for class.";
+    mascot = "👀"; hapticPattern = [20, 30, 20, 30, 20];
+  } else if (answers[4] === "unknown") {
+    theme = "theme-green"; icon = "map"; title = "Build the mental map.";
+    description = "Jumping into the details of an unfamiliar topic creates high cognitive friction.";
+    action = "Spend 20 mins orienting yourself. Watch an overview video or read summaries before deep study.";
+    mascot = "🗺️"; hapticPattern = [20, 30, 20, 30, 20];
+  } else if (answers[6] === "high" && actual >= expected) {
+    theme = "theme-blue"; icon = "flame"; title = "Prime study window.";
+    description = "Your energy is peaking right on time with your biological clock. This is your most valuable cognitive currency.";
+    action = "Do the hardest thing on your list. Problem-solving, difficult concepts, or active recall for a solid block.";
+    mascot = "🔥"; hapticPattern = [15, 20, 15, 20, 50, 20, 50];
+  } else if (answers[6] === "high") {
+    theme = "theme-blue"; icon = "zap"; title = "Outperforming the clock.";
+    description = "It's typically a lower-energy time of day, but you personally feel highly alert. Your actual state wins.";
+    action = "Capitalize on this surge. Tackle a high-value, difficult task.";
+    mascot = "⚡"; hapticPattern = [15, 20, 15, 20, 50];
+  } else if (answers[6] === "medium" && actual < expected) {
+    theme = "theme-yellow"; icon = "scale"; title = "Below expected energy.";
+    description = "You're functional, but under the baseline. Don't waste this window banging your head against difficult new concepts.";
+    action = "Switch to retrieval practice, flashcards, or moderate assignments for 30 mins.";
+    mascot = "⚖️"; hapticPattern = [30, 50, 30];
+  } else if (answers[6] === "low") {
+    theme = "theme-yellow"; icon = "battery-low"; title = "Downgrade the task.";
+    description = "Your actual energy is low. The clock cannot magically manufacture concentration.";
+    action = "Do maintenance work: organize files, format notes, or just take a structured break.";
+    mascot = "🪫"; hapticPattern = [40, 60, 40];
+  } else {
+    theme = "theme-blue"; icon = "repeat"; title = "Retrieval and practice.";
+    description = "You have enough readiness and context for productive work, but you aren't at peak intensity.";
+    action = "Use this time for practice questions, explaining concepts from memory, or moderate work.";
+    mascot = "💪"; hapticPattern = [20, 30, 20];
+  }
+
+  haptic(hapticPattern);
+  setMascot(mascot, title);
+
+  resultEl.className = `result ${theme}`;
+  document.getElementById("resultIcon").setAttribute("data-lucide", icon);
+  document.getElementById("resultTitle").textContent = title;
+  document.getElementById("resultDescription").textContent = description;
+  document.getElementById("resultAction").innerHTML = `<i data-lucide="arrow-right" width="18"></i><span>${action}</span>`;
+
+  // Final roast
+  const roast = finalRoastText();
+  const roastCard = document.getElementById("roastCard");
+  roastCard.style.display = "flex";
+  document.getElementById("roastEmoji").textContent = roast.emoji;
+  document.getElementById("roastText").textContent = roast.text;
+
+  const meterWrap = document.getElementById("roastMeterWrap");
+  meterWrap.style.display = "block";
+  const clamped = Math.min(100, Math.round(roastLevel));
+  document.getElementById("roastLevelLabel").textContent = `${clamped} / 100`;
+  setTimeout(() => { document.getElementById("roastMeterFill").style.width = clamped + "%"; }, 200);
+
+  resultEl.style.display = "block";
+  resetBtn.style.display = "flex";
+  lucide.createIcons();
+
+  // Fun effects based on severity
+  if (roastLevel >= 60) {
+    document.getElementById("app").classList.add("shake");
+    setTimeout(() => document.getElementById("app").classList.remove("shake"), 600);
+    confettiBurst(40);
+  } else if (mascot === "🔥" || mascot === "⚡" || mascot === "💪") {
+    confettiBurst(180);
+  }
+}
+
+resetBtn.addEventListener("click", () => {
+  haptic([15, 30, 15]);
+  currentQuestion = 0;
+  answers = {};
+  roastLevel = timeRoastPoints(new Date());
+  renderQuestion();
+});
+
+/* ---------------- Boot ---------------- */
+const now0 = new Date();
+applyTheme(now0);
+buildFloaters();
+roastLevel = timeRoastPoints(now0);
+renderQuestion();
+
+// Opening time-based roast
+setTimeout(() => {
+  showToast(pick(roastPools[timePool(new Date())]), "🌙");
+  setMascot("😏", "Let's see how this goes.");
+}, 1200);
+</script>
+</body>
+</html>
