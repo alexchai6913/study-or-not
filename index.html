@@ -795,11 +795,13 @@ buildFloaters();
 roastLevel = timeRoastPoints(now0);
 renderQuestion();
 
-// Opening time-based roast
+// Opening time-based roast — instant if it's late night, otherwise a brief delay
+const openingPool = timePool(now0);
+const isLate = openingPool === "night" || openingPool === "earlyMorning";
 setTimeout(() => {
-  showToast(pick(roastPools[timePool(new Date())]), "🌙");
-  setMascot("😏", "Let's see how this goes.");
-}, 1200);
+  showToast(pick(roastPools[openingPool]), isLate ? "🌙" : "😏");
+  setMascot(isLate ? "😴" : "😏", isLate ? "GO. TO. SLEEP." : "Let's see how this goes.");
+}, isLate ? 0 : 1200);
 </script>
 </body>
 </html>
